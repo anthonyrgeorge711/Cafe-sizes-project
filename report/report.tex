@@ -1,0 +1,224 @@
+\documentclass[11pt]{article}
+\usepackage{cafestyle}
+\usepackage{float}
+% Every table is produced by R and included with \input; this macro shrinks wide ones.
+\newcommand{\rtable}[1]{\resizebox{\ifdim\width>\textwidth\textwidth\else\width\fi}{!}{\input{tables/#1}}}
+\newcommand{\TODO}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{How Big Are Prague's Caf\'es?\\\large Café Size --- Data Analytics Semestral Project}
+\author{Anthony George}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report asks how big Prague's cafés are and whether their size goes together with their ratings and prices. It uses 195 cafés visited in person by the class in autumn 2026. The typical café is small: the median café has 22 seats inside, and the mean of 28 seats does not differ detectably from 30. Cafés have about 17 more seats inside than outside, and Prague~5 has fewer outdoor seats than Prague~1. Small cafés (15 or fewer seats inside) are top-rated about twice as often as larger ones. Bigger cafés are slightly more expensive, but the link is weak, depends on a few very large cafés, and is not clearly different from zero once distance from the Orloj is taken into account. In this sample, size says more about a café's rating than about its prices.
+\end{abstract}
+
+% =====================================================================
+\section{Introduction}
+This report is the \emph{Café Size} chapter of the class story about the Prague café market.
+Seats are the most physical measure of a café, and they shape what kind of place it is: a three-table espresso bar, a neighbourhood café with a terrace, or a large Old Town café house. We therefore start by describing size: whether the average café seats about 30 people inside (A1), whether cafés with outdoor seating also have bigger interiors (A2), how many more seats cafés have inside than outside (A3), and whether outdoor seating is concentrated in some districts (A4). We then ask whether size goes together with quality and price: whether small cafés are more often top-rated (A5), and whether bigger cafés charge more, measured by the Price Level (A6--A10). The price questions build from a simple correlation to regressions that add the distance from the Orloj, outdoor seating and finally a logistic model of the chance of being an above-median-price café.
+
+% =====================================================================
+\section{Data and cleaning}
+The class collected 200 café entries in person in autumn 2026 (raw file \texttt{raw\_data.csv}, 299 rows including 99 empty template rows). All cleaning is done in \texttt{01\_cleaning.R}; the cleaned data set has 195 cafés. Cleaning decisions:
+\begin{itemize}
+  \item 99 empty template rows (only the Payment dropdown filled) were removed.
+  \item Five cafés were entered twice by different students (same name, coordinates under 100\,m apart: Starbucks Reserve, Café Louvre, Kampa Café, Republica Coffee, Café Café). The first entry was kept. Three branches of EMA Espresso Bar share a name but are 1.6--3.4\,km apart, so they were kept as different cafés.
+  \item District labels were harmonised (stray spaces, capitals, typos ``Prage'', ``prauge''). One blank café type was set to missing.
+  \item Cells with several prices (e.g.\ ``85, 95, 105'', ``65/40'') keep the first listed price. A missing price means the café does not serve the drink.
+  \item Thousands separators were removed from the number of ratings (``1,020'' $\to$ 1020).
+  \item Seats are counts, so 0 is a real value (grab-and-go cafés) and was kept; blank counts stay missing.
+  \item New variables: Price Level (mean of espresso, cappuccino and flat white, only if all three exist); outdoor seating (outside seats $>0$); small café ($\le 15$ seats inside); top-rated (rating $\ge 4.7$); above-median Price Level (median computed in code: 79.7\,CZK).
+\end{itemize}
+Café size is strongly right-skewed. The median café has 22 seats inside (IQR 17), but the mean is 28.0 because a few very large cafés (up to 260 seats; skewness 4.4) pull it up, and 13 cafés have no seats inside at all. Two thirds of cafés (128 of 191, 67\%) have outdoor seating, and the median café has 6 seats outside. No size variable is normal, but every group except Prague~2, 3 and 5 has at least 30 cafés and normal-looking bootstrapped means, so the central limit theorem justifies parametric tests there (Table~\ref{tab:D}). The Price Level is close to normal (mean 80.8\,CZK, SD 13.2). Full statistics and plots are in Appendix~\ref{app:desc}.
+
+\begin{table}[H]\centering
+\caption{Decision table: for each variable and compared group, whether the variable is normal, whether the central limit theorem applies (n $\ge$ 30 and bootstrapped means look normal, 5{,}000 resamples, seed 2026), and the resulting choice of method.}
+\label{tab:D}
+\rtable{D_table.tex}
+\end{table}
+
+% =====================================================================
+\section{Methods}
+We use $\alpha = .05$ throughout. Hypotheses were written before the data were analysed. One-tailed alternatives are used only where the question names a direction (A2, A3, A5); for these we still report the two-sided 95\% CI. Parametric methods are used where Table~\ref{tab:D} supports them, otherwise rank-based methods. Bootstrap intervals use 5{,}000 percentile resamples with seed 2026. Regressions are checked with residual-versus-fitted and Q--Q plots, the Breusch--Pagan test (robust HC3 standard errors if it fails) and Cook's distance ($>4/n$).
+Cafés in the same district are not independent (shared rents, tourist flows), which makes standard errors of every method here somewhat too small.
+
+% =====================================================================
+\section{Results}
+Table~\ref{tab:S} summarises the main result of every analysis.
+
+\begin{table}[H]\centering
+\caption{Summary of the ten analyses. Estimates with 95\% CIs; p-values one-tailed for A2, A3 and A5, two-tailed otherwise.}
+\label{tab:S}
+\rtable{S_summary_table.tex}
+\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A1: Does the average café seat 30 people inside?}
+\Ho: the mean number of seats inside is 30. \Hone: it is different from 30 (two-tailed).
+Method: one-sample t-test (CLT applies, Table~\ref{tab:D}); because the variable is strongly skewed we report a bootstrap CI and the median.
+In this sample the average café has \meanci{28.0}{24.3}{32.4}{seats} (bootstrap), \ncol\,=\,193 (2 cafés lost to missing values), with a median of 22 seats (IQR 17). The test gives \tstat{192}{-0.97}, \pval{.331}, \textit{d}\,=\,$-0.07$. There is no evidence that the mean differs from 30 seats: the interval covers values from about 24 to 32. The mean, however, is not a good picture of a typical café. Because of a few very large cafés, half of the cafés have 22 seats or fewer.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.55\textwidth]{figures/A1_figure.pdf}
+\caption{Seats inside each café (points), the mean with its bootstrap 95\% CI (blue) and the benchmark of 30 seats (dashed). The y-axis is cut at 80 seats.}
+\end{figure}
+\begin{table}[H]\centering\caption{A1: one-sample test of the mean number of seats inside against 30.}\rtable{A1_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A2: Do cafés with outdoor seating have more seats inside?}
+\Ho: the mean number of seats inside is the same in cafés with and without outdoor seating. \Hone: it is higher in cafés with outdoor seating (one-tailed, fixed in advance). Difference: outdoor minus no outdoor.
+Method: Welch's t-test (CLT applies in both groups; Welch does not assume equal variances).
+Cafés with outdoor seating have on average 30.6 seats inside and those without have 23.1. The difference (outdoor minus no outdoor) is 7.5 seats, \CI{-0.4}{15.4}, \textit{d}\,=\,0.26 (\ncol\,=\,191, 4 lost), \tstat{161.59}{1.87}, \pval{.031} (one-tailed, fixed in advance). Levene's test found no difference in variances (\pval{.636}), and Welch's test does not need equal variances anyway. The two-sided 95\% CI just includes 0, while the one-tailed p-value is below .05. This is not a contradiction: the one-tailed test puts all 5\% of the error on the upper side, so it corresponds to a one-sided 90\% interval, which excludes 0. The effect is small (about 7 seats, roughly two tables), so cafés with a terrace tend to be somewhat bigger inside as well, but the evidence is modest.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.6\textwidth]{figures/A2_figure.pdf}
+\caption{Seats inside by outdoor seating. Points are cafés; blue shows group means with 95\% CIs. The y-axis is cut at 100 seats.}
+\end{figure}
+\begin{table}[H]\centering\caption{A2: seats inside by outdoor seating, Welch's t-test.}\rtable{A2_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A3: How many more seats does a café have inside than outside?}
+\Ho: the mean difference (inside minus outside) is 0. \Hone: it is greater than 0 (one-tailed).
+Method: paired t-test on the differences (CLT applies).
+The average café has 28.1 seats inside and 10.8 outside. The mean paired difference (inside minus outside) is 17.3 seats, \CI{13.5}{21.2}, \textit{d}$_z$\,=\,0.64, \ncol\,=\,191 (4 lost), \tstat{190}{8.85}, \plt{.001} (one-tailed). A typical café thus has about 17 more seats indoors than on its terrace, which means outdoor seating is an addition to the café and not its main space. This is a medium-to-large effect and practically relevant, for example in winter, when most terraces close.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.75\textwidth]{figures/A3_figure.pdf}
+\caption{Distribution of the paired difference seats inside minus seats outside, with the mean difference and its 95\% CI (blue).}
+\end{figure}
+\begin{table}[H]\centering\caption{A3: paired comparison of seats inside and outside.}\rtable{A3_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A4: Does the number of outdoor seats differ between districts?}
+\Ho: outdoor seats are distributed the same way in Prague 1, 2, 3, 5, 7 and 8. \Hone: at least one district differs.
+Method: Kruskal--Wallis test with Dunn's pairwise comparisons (Holm), because three districts have fewer than 30 cafés and skewed counts (Table~\ref{tab:D}).
+The mean number of outdoor seats ranges from 2.8 in Prague~5 to 14.0 in Prague~1 (\ncol\,=\,181; 14 cafés lie in other districts or have missing values). The Kruskal--Wallis test finds a difference between districts, \textit{H}(5)\,=\,13.00, \pval{.023}. After Holm adjustment only one pair differs: cafés in Prague~5 have on average 11.3 fewer outdoor seats than cafés in Prague~1 (bootstrap \CI{-17.0}{-6.5}, adjusted \pval{.008}; Table~\ref{tab:A4post}). Prague~7 and Prague~8 versus Prague~5 come close (adjusted \pval{.067} and \pval{.100}). Ten fewer outdoor seats is a substantial difference for a café, but Prague~5 has only 20 cafés in the sample, so this result rests on few observations.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.75\textwidth]{figures/A4_figure.pdf}
+\caption{Outdoor seats per café in six districts. Blue: district means with 95\% CIs. The y-axis is cut at 70 seats.}
+\end{figure}
+\begin{table}[H]\centering\caption{A4: outdoor seats by district and the Kruskal--Wallis test.}\rtable{A4_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A5: Are small cafés more likely to be top-rated?}
+\Ho: the share of top-rated cafés (rating $\ge$ 4.7) is the same for small cafés ($\le$ 15 seats inside) and other cafés. \Hone: it is higher for small cafés (one-tailed). Difference: small minus other, in percentage points.
+Method: $\chi^2$ test of independence (smallest expected count 20, so no need for Fisher's exact test).
+Of the 53 small cafés, 58.5\% are top-rated, compared with 29.7\% of the 138 other cafés. The difference (small minus other) is 28.8 percentage points, \CI{13.5}{44.1}, with \chisqstat{1}{191}{13.51}, Cramér's \textit{V}\,=\,0.27, \plt{.001} (one-tailed). The smallest expected count is 20.0, so the $\chi^2$ test is valid. All standardised residuals are $\pm 3.67$, so all four cells contribute to the association: small cafés are top-rated more often and larger cafés less often than independence would predict. A small café is roughly twice as likely to be top-rated, which is the strongest size effect in this report. It is an association, not a cause: small cafés may also have fewer ratings, and fewer ratings make extreme averages more likely.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.55\textwidth]{figures/A5_figure.pdf}
+\caption{Share of top-rated cafés (Google rating 4.7 or higher) among small cafés and other cafés, with 95\% CIs.}
+\end{figure}
+\begin{table}[H]\centering\caption{A5: small café by top-rated, counts, row percentages and $\chi^2$ test.}\rtable{A5_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A6: Is the Price Level correlated with seats inside?}
+\Ho: $\rho = 0$. \Hone: $\rho \neq 0$.
+Method: Spearman's $\rho$ with a bootstrap CI. Seats inside is far from normal (skewness 4.4), and the central limit theorem concerns means, not the shape needed for Pearson's $r$.
+Spearman's correlation between the Price Level and seats inside is $\rho$\,=\,0.25, bootstrap \CI{0.09}{0.39}, \ncol\,=\,191 (4 lost), \plt{.001}. The correlation is positive and weak: bigger cafés tend to be somewhat more expensive, but the ranks of size share only about 6\% of their variance with the ranks of price. Most of the variation in prices has nothing to do with size.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.65\textwidth]{figures/A6_figure.pdf}
+\caption{Price Level against seats inside; one point per café.}
+\end{figure}
+\begin{table}[H]\centering\caption{A6: Spearman correlation of Price Level and seats inside.}\rtable{A6_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A7: How much does the Price Level change per 10 seats?}
+\Ho: slope $= 0$. \Hone: slope $\neq 0$.
+The fitted line is Price Level\,=\,78.7\,+\,0.69\,$\times$\,(seats inside / 10). Each 10 additional seats inside go with a Price Level higher by 0.69\,CZK, \CI{0.07}{1.31}, \tstat{189}{2.19}, \pval{.030}, \ncol\,=\,191, \textit{R}$^2$\,=\,0.02. That is less than one crown per 10 seats, so even a café 50 seats larger than another would be expected to cost only about 3.5\,CZK more per drink, and size explains only 2\% of the variation in prices. The Breusch--Pagan test does not reject constant variance (\pval{.157}), so ordinary standard errors are used. The slope depends heavily on a few very large cafés, above all VNITROBLOCK (260 seats, Cook's distance 0.54), Café Louvre (0.25) and Starbucks Reserve (0.20) (Appendix~\ref{app:diag}).
+
+\begin{figure}[H]\centering
+\includegraphics[width=.65\textwidth]{figures/A7_figure.pdf}
+\caption{Price Level against seats inside with the fitted OLS line and its 95\% confidence band.}
+\end{figure}
+\begin{table}[H]\centering\caption{A7: simple regression of Price Level on seats inside (per 10 seats).}\rtable{A7_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A8: Does the link hold once distance from the Orloj is controlled?}
+\Ho: the slope of seats inside, holding distance constant, is 0. \Hone: it is not 0.
+Adding the distance from the Orloj reduces the slope of seats from 0.69 to 0.61\,CZK per 10 seats, so 88\% of it remains: \CI{-0.01}{1.23}, \pval{.055}, \ncol\,=\,191, \textit{R}$^2$\,=\,0.05. Holding size constant, each km from the Orloj goes with a Price Level lower by 1.55\,CZK, \CI{-2.91}{-0.19}, \pval{.025}. The two predictors are almost uncorrelated (VIF 1.01), so distance explains only a small part of the size--price link. However, once distance is in the model, there is no longer evidence that the size slope differs from zero. The Breusch--Pagan test gives \pval{.098}, so ordinary standard errors are kept.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.55\textwidth]{figures/A8_figure.pdf}
+\caption{Slope of seats inside (CZK per 10 seats) with 95\% CI, without and with distance from the Orloj in the model.}
+\end{figure}
+\begin{table}[H]\centering\caption{A8: multiple regression of Price Level on seats inside and distance from the Orloj.}\rtable{A8_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A9: Does the link differ with and without outdoor seating?}
+\Ho: the interaction coefficient is 0 (same slope). \Hone: it is not 0.
+The link between size and price is different for the two kinds of café. Among cafés without outdoor seating, each 10 seats go with a Price Level higher by 2.75\,CZK, \CI{1.39}{4.10}. Among cafés with outdoor seating, the slope is lower by 2.62\,CZK (\CI{-4.15}{-1.10}, \tstat{185}{-3.41}, \plt{.001}), so it is essentially flat (about 0.1\,CZK per 10 seats). \ncol\,=\,189, \textit{R}$^2$\,=\,0.08, Breusch--Pagan \pval{.829}. So bigger cafés are more expensive only when they have no terrace. This result should be read with care: the no-outdoor group has only 63 cafés, and it contains Café Slavia (150 seats, Price Level 104.7\,CZK; Cook's distance 0.33), which by itself pulls the no-outdoor slope up. This interaction was planned as part of the topic, but its size depends on a few cafés.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.7\textwidth]{figures/A9_figure.pdf}
+\caption{Price Level against seats inside, with separate OLS lines and 95\% bands for cafés with and without outdoor seating.}
+\end{figure}
+\begin{table}[H]\centering\caption{A9: regression with the interaction of seats inside and outdoor seating.}\rtable{A9_table.tex}\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{A10: Does the chance of an above-median Price Level change with size?}
+\Ho: the average marginal effect of 10 seats is 0. \Hone: it is not 0.
+Each 10 additional seats inside raise the predicted probability that a café has an above-median Price Level by 2.7 percentage points on average (average marginal effect), \CI{-0.3}{5.7}, \textit{z}\,=\,1.77, \pval{.077}, \ncol\,=\,191 (odds ratio 1.12 per 10 seats). There is no evidence that the chance of being an above-median-price café changes with size. The direction agrees with A6 and A7, but the effect is small and uncertain: the interval runs from no change to about 6 percentage points per 10 seats.
+
+\begin{figure}[H]\centering
+\includegraphics[width=.65\textwidth]{figures/A10_figure.pdf}
+\caption{Cafés with above-median (1) or not (0) Price Level against seats inside, with the predicted probability from the logistic regression and its 95\% CI.}
+\end{figure}
+\begin{table}[H]\centering\caption{A10: logistic regression of above-median Price Level on seats inside, with the average marginal effect.}\rtable{A10_table.tex}\end{table}
+
+% =====================================================================
+\section{Discussion and limitations}
+Taken together, the results describe a market of mostly small cafés. Half have 22 seats or fewer, the typical café has about 17 more seats inside than outside, and outdoor seating is most common in Prague~1 and least common in Prague~5. Size is clearly linked to ratings: small cafés are top-rated about twice as often as larger ones. The link between size and price is much weaker. Bigger cafés are slightly more expensive (A6, A7), but by less than one crown per 10 seats. The link is no longer clearly different from zero once distance from the Orloj is controlled (A8) or when price is treated as above or below the median (A10). It appears only among cafés without outdoor seating (A9), where a few large historic cafés drive it.
+
+The results have three main limits. First, the sample is a convenience sample: students chose which cafés to visit, mostly in the centre, so every result holds \emph{in this sample} and not necessarily for all Prague cafés. Second, the data are observational, so none of the associations is causal; for example, small cafés may be better rated because they have fewer, more loyal reviewers and not because being small makes them better. Third, cafés in the same district share rents, tourist flows and competition, so they are not independent observations. Every test here assumes independence, so the standard errors are probably too small and the p-values too optimistic. In addition, seat counts were partly estimated by students, some prices were taken as the first of several listed sizes, and the regressions depend on a handful of very large cafés.
+
+\section{Conclusion}
+How big are Prague's cafés, and does size matter? In this sample, the typical café is small, with about 22 seats inside and a modest terrace. Size goes clearly with ratings, because small cafés are much more often top-rated, but only weakly with prices: bigger cafés charge at most about one crown more per 10 seats, and this link disappears once location is taken into account. Size tells us more about how a café is rated than about what it charges.
+
+% =====================================================================
+\appendix
+\section{Descriptive statistics}\label{app:desc}
+\begin{table}[H]\centering\caption{Full descriptive statistics of every variable and group used.}\rtable{D_stats.tex}\end{table}
+\begin{table}[H]\centering\caption{Categorical variables: counts and percentages.}\rtable{D_categorical.tex}\end{table}
+
+\section{Normality and central-limit checks}
+Each row: histogram, boxplot, normal Q--Q plot and the distribution of 5{,}000 bootstrapped means.
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{figures/D_seats_inside.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_seats_inside_outdoor_TRUE.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_seats_inside_outdoor_FALSE.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_diff_in_out.pdf}
+\caption{Seats inside (all cafés; with and without outdoor seating) and the paired difference inside minus outside.}
+\end{figure}
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{figures/D_seats_outside_Prague1.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_seats_outside_Prague2.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_seats_outside_Prague3.pdf}
+\caption{Seats outside in Prague 1, 2 and 3.}
+\end{figure}
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{figures/D_seats_outside_Prague5.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_seats_outside_Prague7.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_seats_outside_Prague8.pdf}
+\caption{Seats outside in Prague 5, 7 and 8.}
+\end{figure}
+\begin{figure}[H]\centering
+\includegraphics[width=\textwidth]{figures/D_price_level.pdf}\\
+\includegraphics[width=\textwidth]{figures/D_dist_orloj.pdf}
+\caption{Price Level and distance from the Orloj.}
+\end{figure}
+
+\section{Assumption checks and post hoc tests}\label{app:diag}
+\begin{table}[H]\centering\caption{A4: Dunn's pairwise comparisons with Holm adjustment; mean differences with bootstrap 95\% CIs.}\label{tab:A4post}\rtable{A4_posthoc_table.tex}\end{table}
+\begin{figure}[H]\centering\includegraphics[width=\textwidth]{figures/A7_diagnostics.pdf}\caption{A7 diagnostics: residuals vs fitted, normal Q--Q of residuals, Cook's distance.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=\textwidth]{figures/A8_diagnostics.pdf}\caption{A8 diagnostics.}\end{figure}
+\begin{figure}[H]\centering\includegraphics[width=\textwidth]{figures/A9_diagnostics.pdf}\caption{A9 diagnostics.}\end{figure}
+The Breusch--Pagan test does not reject constant residual variance in any regression (A7 \pval{.157}, A8 \pval{.098}, A9 \pval{.829}), so ordinary standard errors are reported. The residuals are right-skewed in the Q--Q plots, but with 189--191 cafés the coefficients are still approximately normal. Using the threshold $4/n \approx 0.021$, several cafés are influential; the largest Cook's distances are VNITROBLOCK (0.54 in A7, 0.25 in A8), Café Louvre (0.25 in A7), Kavárna Creperié (0.27 in A8), Starbucks Reserve (0.20 in A7, 0.18 in A9) and Café Slavia (0.33 in A9). These very large or very expensive cafés matter for the size--price slopes, as discussed in the results. They are real cafés and not data errors, so they were kept.
+
+\end{document}

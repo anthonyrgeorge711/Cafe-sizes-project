@@ -1,0 +1,82 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{default}
+\usecolortheme{dove}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\graphicspath{{../report/figures/}}   % reuse the figures exported by R
+
+\title{How Big Are Prague's Cafés?}
+\subtitle{Café Size --- Data Analytics Semestral Project}
+\author{Anthony George \and \textit{teammates}}
+\date{November 2026}
+
+% One slide per finding: key plot + estimate with CI + effect size + plain-words meaning + test name.
+% Present findings, not procedure. No assumption details here (they are in the report).
+\newcommand{\finding}[4]{%
+\begin{frame}{#1}
+\begin{columns}[T]
+\column{.58\textwidth}\centering\includegraphics[width=\linewidth]{#2}
+\column{.4\textwidth}\small #3\par\vspace{1em}\footnotesize\textit{Test: #4}
+\end{columns}
+\end{frame}}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Introduction}
+\begin{itemize}
+  \item 195 Prague cafés visited in person by the class (autumn 2026)
+  \item Our chapter: \textbf{how big are cafés}, where is outdoor seating, and does size go with ratings and prices?
+  \item \textit{TODO: one line on how the team divides the ten findings}
+\end{itemize}
+\end{frame}
+
+\finding{A1: A typical café seats about 28 inside}{A1_figure.pdf}
+{Mean 28.0 seats, 95\% CI [24.3, 32.4], n = 193 --- no evidence it differs from 30. Median 22: most cafés are smaller, a few very large ones pull the mean up.}
+{one-sample t-test, p = .331}
+
+\finding{A2: Cafés with outdoor seating are a bit bigger inside}{A2_figure.pdf}
+{+7.5 seats, 95\% CI [$-$0.4, 15.4], d = 0.26. \textit{TODO: plain-words meaning.}}
+{Welch t-test, one-tailed p = .031}
+
+\finding{A3: About 17 more seats inside than outside}{A3_figure.pdf}
+{+17.3 seats, 95\% CI [13.5, 21.2], dz = 0.64. \textit{TODO}}
+{paired t-test, p < .001}
+
+\finding{A4: Outdoor seating differs between districts}{A4_figure.pdf}
+{\textit{TODO: which districts differ (Dunn--Holm table).}}
+{Kruskal--Wallis H(5) = 13.00, p = .023}
+
+\finding{A5: Small cafés are more often top-rated}{A5_figure.pdf}
+{58.5\% vs 29.7\%: +28.8 pp, 95\% CI [13.5, 44.1], V = 0.27. \textit{TODO}}
+{$\chi^2$ test, one-tailed p < .001}
+
+\finding{A6: Bigger cafés are slightly pricier}{A6_figure.pdf}
+{Spearman $\rho$ = 0.25, 95\% CI [0.09, 0.39], n = 191. \textit{TODO}}
+{Spearman correlation, p < .001}
+
+\finding{A7: +0.7 CZK Price Level per 10 seats}{A7_figure.pdf}
+{0.69 CZK per 10 seats, 95\% CI [0.07, 1.31], R$^2$ = 0.02. \textit{TODO}}
+{simple regression, p = .030}
+
+\finding{A8: Controlling for distance from the Orloj}{A8_figure.pdf}
+{0.61 CZK per 10 seats, 95\% CI [$-$0.01, 1.23]; most of the slope remains but it is no longer clearly different from zero. \textit{TODO}}
+{multiple regression, p = .055}
+
+\finding{A9: The size--price link depends on outdoor seating}{A9_figure.pdf}
+{Slope difference $-$2.62 CZK per 10 seats, 95\% CI [$-$4.15, $-$1.10]. \textit{TODO}}
+{regression with interaction, p < .001}
+
+\finding{A10: Chance of above-median prices per 10 seats}{A10_figure.pdf}
+{+2.7 pp per 10 seats, 95\% CI [$-$0.3, 5.7] --- no clear evidence. \textit{TODO}}
+{logistic regression, average marginal effect, p = .077}
+
+\begin{frame}{Conclusion}
+\begin{itemize}
+  \item \textit{TODO: 3 bullets answering ``how big are Prague cafés, and does size matter?''}
+  \item Limits: convenience sample, observational data, cafés in a district not independent
+\end{itemize}
+\end{frame}
+\end{document}
