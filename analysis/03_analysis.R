@@ -301,3 +301,278 @@ bars <- barplot(c("Small (15 or fewer)" = A5$pct_small, "Other" = A5$pct_other),
 arrows(bars, c(ci_small[1], ci_other[1]), bars, c(ci_small[2], ci_other[2]),
        angle = 90, code = 3, length = 0.1, col = "blue", lwd = 2)
 dev.off()
+
+
+
+
+#A6
+
+
+d6 <- df[!is.na(df$price_level) & !is.na(df$seats_inside),]
+
+a6 <- cor.test(d6$seats_inside, d6$price_level, method = "spearman", exact = FALSE)
+
+a6
+
+set.seed(2026)
+boot_rho <- replicate (5000, {
+  i <- sample(nrow(d6), replace = TRUE)
+  cor(d6$seats_inside[i], d6$price_level[i], method = "spearman")
+})
+
+ci6 <- quantile(boot_rho, c(0.025, 0.975))
+                
+ci6
+
+A6 <- data.frame(n = nrow(d6), rho = round(a6$estimate, 2),
+                 ci_low = round(ci6[1], 2), ci_high = round(ci6[2], 2),
+                 shared_variance = round(100 * a6$estimate^2, 1),
+                 p = fp(a6$p.value))
+
+A6
+
+save_tab(A6, "A6")
+
+
+pdf("report/figures/A6_figure.pdf", width = 6, height = 4)
+plot(d6$seats_inside, d6$price_level, pch = 16, col = "grey50",
+     xlab = "Seats inside", ylab = "Price Level (CZK)", main = "A6: Price Level vs seats",
+     sub = paste0("Spearman's rho = ", A6$rho, ", 95% CI [", A6$ci_low, ", ", A6$ci_high, "]"))
+dev.off()
+
+
+# A7
+
+library(lmtest)
+
+d6$seats10 <- d6$seats_inside /10
+
+m7 <- lm(price_level ~ seats10,data = d6)
+
+summary(m7)
+
+reg_tab <- function(m) {
+  co <- summary(m)$coefficients
+  ci <- confint(m)
+  data.frame(term = rownames(co), B = round(co[, 1], 2), SE = round(co[, 2], 2),
+             ci_low = round(ci[, 1], 2), ci_high = round(ci[, 2], 2),
+             t = round(co[, 3], 2), p = fp(co[, 4]))
+}
+
+bptest(m7)
+
+pdf("report/figures/A7_diagnostics.pdf", width = 9, height = 3.5)
+par(mfrow = c(1, 3))
+plot(m7, which = c(1, 2, 4))
+dev.off()
+
+cd7 <- cooks.distance(m7)
+inf17 <- data.frame(cafe = d6$cafe_name, cooks_d = round(cd7, 3))[cd7 > 4 / nrow(d6), ]
+inf17[order(-inf17$cooks_d), ]
+
+A7 <- reg_tab(m7)
+A7$n  <- nobs(m7)
+A7$R2 <- round(summary(m7)$r.squared, 2)
+A7
+save_tab(A7, "A7")
+
+grid7 <- data.frame(seats10 = seq(0, max(d6$seats10), length.out = 100))
+pred7 <- predict(m7, grid7, interval = "confidence")
+pdf("report/figures/A7_figure.pdf", width = 6, height = 4)
+plot(d6$seats_inside, d6$price_level, pch = 16, col = "grey50",
+     xlab = "Seats inside", ylab = "Price Level (CZK)", main = "A7: Price Level per 10 seats")
+lines(grid7$seats10 * 10, pred7[, "fit"], col = "blue", lwd = 2)
+lines(grid7$seats10 * 10, pred7[, "lwr"], col = "blue", lty = 2)
+lines(grid7$seats10 * 10, pred7[, "upr"], col = "blue", lty = 2)
+dev.off()
+
+
+
+
+#----A8
+
+d8 <- d6[!is.na(d6$dist_orloj), ]
+
+m8a <- lm(price_level ~ seats10, data = d8)
+
+m8 <- lm(price_level ~ seats10 + dist_orloj, data =d8)
+
+summary(m8)
+
+b_before <- coef(m8a)["seats10"]
+b_after <- coef(m8)["seats10"]
+b_before
+b_after
+round(100* b_after / b_before, 1)
+
+bptest(m8)
+pdf("report/figures/A8_diagnostics.pdf", width = 9, height = 3.5)
+par(mfrow = c(1, 3))
+plot(m8, which = c(1, 2, 4))
+dev.off()
+
+cd8 <- cooks.distance(m8)
+infl8 <- data.frame(cafe = d8$cafe_name, cooks_d = round(cd8, 3))[cd8 > 4/nrow(d8), ]
+infl8[order(-infl8$cooks_d), ]
+
+A8 <- reg_tab(m8)
+A8$n <- nobs(m8)
+A8$R2 <- round(summary(m8)$r.squared, 2)
+A8$seats_sloped_before <- round(b_before, 2)
+
+A8
+save_tab(A8, "A8")
+
+ci_before <- confint(m8a)["seats10", ]
+ci_after  <- confint(m8)["seats10", ]
+pdf("report/figures/A8_figure.pdf", width = 5, height = 4)
+plot(c(1, 2), c(b_before, b_after), xlim = c(0.5, 2.5),
+     ylim = range(c(0, ci_before, ci_after)), pch = 19, col = "blue", xaxt = "n",
+     xlab = "", ylab = "CZK per 10 seats inside", main = "A8: seats slope before and after")
+axis(1, at = c(1, 2), labels = c("Seats only", "Seats + distance"))
+arrows(c(1, 2), c(ci_before[1], ci_after[1]), c(1, 2), c(ci_before[2], ci_after[2]),
+       angle = 90, code = 3, length = 0.1, col = "blue", lwd = 2)
+abline(h = 0, lty = 2, col = "red")
+dev.off()
+
+
+#--------
+
+#A9
+
+d9 <- d6[!is.na(d6$has_outdoor), ]
+d9$outdoor <- factor(ifelse(d9$has_outdoor, "Outdoor", "No outdoor"),
+                     levels = c("No outdoor", "Outdoor"))
+
+m9 <- lm(price_level ~ seats10 * outdoor, data = d9)
+
+summary(m9)
+
+bptest(m9)
+
+pdf("report/figures/A9_diagnostics.pdf", width = 9, height = 3.5)
+par(mfrow = c(1, 3))
+plot(m9, which = c(1, 2, 4))
+dev.off()
+
+cd9 <- cooks.distance(m9)
+infl9 <- data.frame(cafe = d9$cafe_name, cooks_d = round(cd9, 3))[cd9 >4 / nrow(d9), ]
+infl9[order(-infl9$cooks_d), ]
+
+A9 <- reg_tab(m9)
+A9$n <- nobs(m9)
+A9$R2 <- round(summary(m9)$r.squared, 2)
+
+A9
+
+save_tab(A9, "A9")
+
+
+pdf("report/figures/A9_figure.pdf", width = 6, height = 4)
+cols <- c("No outdoor" = "darkorange", "Outdoor" = "steelblue")
+plot(d9$seats_inside, d9$price_level, pch = 16, col = cols[as.character(d9$outdoor)],
+     xlab = "Seats inside", ylab = "Price Level (CZK)", main = "A9: slope by outdoor seating")
+for (g in levels(d9$outdoor)) {
+  grid9 <- data.frame(seats10 = seq(0, max(d9$seats10), length.out = 100),
+                      outdoor = factor(g, levels = levels(d9$outdoor)))
+  pred9 <- predict(m9, grid9, interval = "confidence")
+  lines(grid9$seats10 * 10, pred9[, "fit"], col = cols[g], lwd = 2)
+  lines(grid9$seats10 * 10, pred9[, "lwr"], col = cols[g], lty = 2)
+  lines(grid9$seats10 * 10, pred9[, "upr"], col = cols[g], lty = 2)
+}
+legend("topright", legend = names(cols), col = cols, pch = 16, lwd = 2, bty = "n")
+dev.off()
+
+
+
+#----
+
+#A10
+
+
+library(marginaleffects)
+
+d10 <- d6[!is.na(d6$above_median_price), ]
+
+m10 <- glm(above_median_price ~ seats10, data = d10, family = binomial)
+
+summary(m10)
+
+ame10 <- avg_slopes(m10, variables = "seats10")
+ame10
+
+A10 <- data.frame(n= nobs(m10),
+                  ame_pp = round(100* ame10$estimate, 1),
+                  ci_low = round(100 * ame10$conf.low, 1),
+                  ci_high = round(100 * ame10$conf.high, 1),
+                  z = round(ame10$statistic, 2), p = fp(ame10$p.value),
+                  odds_ratio = round(exp(coef(m10)["seats10"]), 2))
+
+A10
+
+save_tab(A10, "A10")
+
+grid10 <- data.frame(seats10 = seq(0, max(d10$seats10), length.out = 100))
+pr10 <- predict(m10, grid10, type = "link", se.fit = TRUE)
+pdf("report/figures/A10_figure.pdf", width = 6, height = 4)
+plot(d10$seats_inside, jitter(as.numeric(d10$above_median_price), amount = 0.03),
+     pch = 16, col = "grey50", xlab = "Seats inside",
+     ylab = "P(Price Level above median)", main = "A10: chance of an above-median price")
+lines(grid10$seats10 * 10, plogis(pr10$fit), col = "blue", lwd = 2)
+lines(grid10$seats10 * 10, plogis(pr10$fit - 1.96 * pr10$se.fit), col = "blue", lty = 2)
+lines(grid10$seats10 * 10, plogis(pr10$fit + 1.96 * pr10$se.fit), col = "blue", lty = 2)
+dev.off()
+
+
+
+#----
+
+#summary
+
+ci_txt <- function(lo, hi) paste0("[", lo, ", ", hi, "]")
+
+
+row_of <- function(tab, name) tab[tab$term == name, ]
+r7 <- row_of(A7, "seats10")
+r8 <- row_of(A8, "seats10")
+r9 <- row_of(A9, "seats10:outdoorOutdoor")
+
+
+S <- data.frame(
+  analysis = paste0("A", 1:10),
+  question = c("Mean seats inside vs 30", "Seats inside: terrace vs none",
+               "Seats inside minus outside", "Outdoor seats by district",
+               "Small cafe -> top-rated", "Price Level ~ seats inside",
+               "Price Level per 10 seats", "Seats slope, controlling distance",
+               "Seats slope: terrace vs none", "P(above-median price) per 10 seats"),
+  method = c("One-sample t-test", "Welch t-test (one-tailed)", "Paired t-test (one-tailed)",
+             "Kruskal-Wallis + Dunn (Holm)", "Chi-square (one-tailed)", "Spearman's rho",
+             "OLS regression", "Multiple regression", "Regression with interaction",
+             "Logistic regression (AME)"),
+  estimate = c(
+    paste0("M = ", A1$mean, " seats ", ci_txt(A1$ci_low, A1$ci_high)),
+    paste0("Diff = ", A2$difference, " seats ", ci_txt(A2$ci_low, A2$ci_high)),
+    paste0("Diff = ", A3$difference, " seats ", ci_txt(A3$ci_low, A3$ci_high)),
+    paste0("Means ", min(A4$mean), "-", max(A4$mean), " seats"),
+    paste0(A5$difference_pp, " pp ", ci_txt(A5$ci_low, A5$ci_high)),
+    paste0("rho = ", A6$rho, " ", ci_txt(A6$ci_low, A6$ci_high)),
+    paste0(r7$B, " CZK ", ci_txt(r7$ci_low, r7$ci_high)),
+    paste0(r8$B, " CZK ", ci_txt(r8$ci_low, r8$ci_high), " (was ", r7$B, ")"),
+    paste0("Slope diff ", r9$B, " CZK ", ci_txt(r9$ci_low, r9$ci_high)),
+    paste0(A10$ame_pp, " pp ", ci_txt(A10$ci_low, A10$ci_high))),
+  statistic = c(
+    paste0("t(", A1$df, ") = ", A1$t, ", d = ", A1$d),
+    paste0("t(", A2$df, ") = ", A2$t, ", d = ", A2$d),
+    paste0("t(", A3$df, ") = ", A3$t, ", dz = ", A3$dz),
+    paste0("H(", a4$parameter, ") = ", round(a4$statistic, 2)),
+    paste0("chi2(1, N = ", A5$N, ") = ", A5$chi2, ", V = ", A5$V),
+    paste0("n = ", A6$n),
+    paste0("t = ", r7$t, ", R2 = ", A7$R2[1]),
+    paste0("t = ", r8$t, ", R2 = ", A8$R2[1]),
+    paste0("t = ", r9$t, ", R2 = ", A9$R2[1]),
+    paste0("z = ", A10$z)),
+  p = c(A1$p, A2$p_one_tailed, A3$p_one_tailed, fp(a4$p.value), A5$p_one_tailed,
+        A6$p, r7$p, r8$p, r9$p, A10$p))
+
+S
+save_tab(S, "S_summary")

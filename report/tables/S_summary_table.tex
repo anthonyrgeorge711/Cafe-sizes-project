@@ -1,20 +1,18 @@
 % latex table generated in R 4.3.3 by xtable 1.8-4 package
-% Mon Nov 16 14:03:52 2026
-\begingroup\scriptsize
+% Fri Nov 20 15:28:51 2026
 \begin{tabular}{llllll}
   \toprule
-Analysis & Question & Method & Estimate & Statistic & p \\ 
+analysis & question & method & estimate & statistic & p \\ 
   \midrule
-A1 & Mean seats inside vs 30 & One-sample t-test & M = 28.0 seats, 95\% CI [24.3, 32.4] & t(192) = -0.97, d = -0.07 & .331 \\ 
-  A2 & Seats inside: outdoor vs none & Welch t-test (one-tailed) & Diff = 7.5 seats, 95\% CI [-0.4, 15.4] & t(161.59) = 1.87, d = 0.26 & .031 \\ 
-  A3 & Seats inside minus outside & Paired t-test (one-tailed) & Diff = 17.3 seats, 95\% CI [13.5, 21.2] & t(190) = 8.85, dz = 0.64 & $<$ .001 \\ 
-  A4 & Outdoor seats by district & Kruskal-Wallis + Dunn (Holm) & Means 2.8-14.0 seats & H(5) = 13.00 & .023 \\ 
-  A5 & Small cafe -$>$ top-rated & Chi-square (one-tailed) & 28.8 pp, 95\% CI [13.5, 44.1] & chi2(1, N = 191) = 13.51, V = 0.27 & $<$ .001 \\ 
-  A6 & Price Level \~{} seats inside & Spearman's rho & 0.25, 95\% CI [0.09, 0.39] & n = 191 & $<$ .001 \\ 
-  A7 & Price Level per 10 seats & OLS & 0.69 CZK, 95\% CI [0.07, 1.31] & t = 2.19, R2 = 0.02 & .030 \\ 
-  A8 & Seats slope controlling distance & OLS & 0.61 CZK, 95\% CI [-0.01, 1.23] & was 0.69; dist B = -1.55 & .055 \\ 
-  A9 & Seats slope: outdoor vs none & OLS interaction & Slope diff -2.62 CZK, 95\% CI [-4.15, -1.10] & t = -3.41 & $<$ .001 \\ 
-  A10 & P(above-median price) per 10 seats & Logistic regression, AME & 2.7 pp, 95\% CI [-0.3, 5.7] & z = 1.77 & .077 \\ 
+A1 & Mean seats inside vs 30 & One-sample t-test & M = 28 seats [23.9, 32.1] & t(192) = -0.97, d = -0.07 & .331 \\ 
+  A2 & Seats inside: terrace vs none & Welch t-test (one-tailed) & Diff = 7.5 seats [-0.4, 15.4] & t(161.59) = 1.87, d = 0.26 & .031 \\ 
+  A3 & Seats inside minus outside & Paired t-test (one-tailed) & Diff = 17.3 seats [13.5, 21.2] & t(190) = 8.85, dz = 0.64 & $<$ .001 \\ 
+  A4 & Outdoor seats by district & Kruskal-Wallis + Dunn (Holm) & Means 2.8-14 seats & H(5) = 13 & .023 \\ 
+  A5 & Small cafe -$>$ top-rated & Chi-square (one-tailed) & 28.8 pp [13.5, 44.1] & chi2(1, N = 191) = 13.51, V = 0.27 & $<$ .001 \\ 
+  A6 & Price Level \~{} seats inside & Spearman's rho & rho = 0.25 [0.09, 0.39] & n = 191 & $<$ .001 \\ 
+  A7 & Price Level per 10 seats & OLS regression & 0.69 CZK [0.07, 1.31] & t = 2.19, R2 = 0.02 & .030 \\ 
+  A8 & Seats slope, controlling distance & Multiple regression & 0.61 CZK [-0.01, 1.23] (was 0.69) & t = 1.93, R2 = 0.05 & .055 \\ 
+  A9 & Seats slope: terrace vs none & Regression with interaction & Slope diff -2.62 CZK [-4.15, -1.1] & t = -3.41, R2 = 0.08 & $<$ .001 \\ 
+  A10 & P(above-median price) per 10 seats & Logistic regression (AME) & 2.7 pp [-0.3, 5.7] & z = 1.77 & .077 \\ 
    \bottomrule
 \end{tabular}
-\endgroup
