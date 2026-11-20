@@ -124,8 +124,14 @@ clean$rating <- as.numeric(clean$Rating..Google.)
 
 clean$n_ratings <- as.numeric(gsub(",", "", clean$Number.of.ratings..Google.))
 
-clean$dist_orloj <- as.numeric((clean$Distance.from.Pražský.Orloj))
+# WHAT: finds the distance column by searching for "Orloj" in the column names,
+#       so we never have to type the letter ž (which breaks on some computers).
+# HOW:  grep(word, names) gives the position of the column whose name contains it.
+orloj_col <- grep("Orloj", names(clean))
 
+# WHAT: the distance from the Orloj in km, as a number.
+# HOW:  clean[[position]] picks a column by its number instead of its name.
+clean$dist_orloj <- as.numeric(clean[[orloj_col]])
 summary(clean[, c("seats_inside", "seats_outside", "rating", "n_ratings", "dist_orloj")])
 #-----------
 #new variables

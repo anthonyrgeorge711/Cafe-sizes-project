@@ -1,20 +1,20 @@
 % latex table generated in R 4.3.3 by xtable 1.8-4 package
-% Mon Nov 16 14:00:36 2026
-\begin{tabular}{llrrlll}
+% Fri Nov 20 14:04:19 2026
+\begin{tabular}{lrrlll}
   \toprule
-Variable & Group & n & Skewness & Normal & CLT & Conclusion \\ 
+group & n & skew & normal & clt & verdict \\ 
   \midrule
-Seats inside & All cafes & 193 & 4.39 & No & Yes & Parametric \\ 
-  Seats inside & Outdoor seating & 128 & 4.52 & No & Yes & Parametric \\ 
-  Seats inside & No outdoor seating & 63 & 2.89 & No & Yes & Parametric \\ 
-  Inside minus outside & Paired difference & 191 & 3.60 & No & Yes & Parametric \\ 
-  Seats outside & Prague 1 & 61 & 3.06 & No & Yes & Parametric \\ 
-  Seats outside & Prague 2 & 22 & 1.75 & No & No (n $<$ 30) & Non-parametric \\ 
-  Seats outside & Prague 3 & 12 & 1.69 & No & No (n $<$ 30) & Non-parametric \\ 
-  Seats outside & Prague 5 & 20 & 2.23 & No & No (n $<$ 30) & Non-parametric \\ 
-  Seats outside & Prague 7 & 31 & 0.75 & Yes & Yes & Parametric \\ 
-  Seats outside & Prague 8 & 35 & 1.12 & No & Yes & Parametric \\ 
-  Price Level (CZK) & All cafes & 193 & 0.80 & Yes & Yes & Parametric \\ 
-  Distance from Orloj (km) & All cafes & 195 & 1.12 & No & Yes & Parametric \\ 
+A1: seats inside, all cafes & 193 & 4.39 & FALSE & TRUE & Parametric \\ 
+  A2: seats inside, WITH terrace & 128 & 4.52 & FALSE & TRUE & Parametric \\ 
+  A2: seats inside, WITHOUT terrace &  63 & 2.89 & FALSE & TRUE & Parametric \\ 
+  A3: inside minus outside & 191 & 3.60 & FALSE & TRUE & Parametric \\ 
+  A4: seats outside, Prague 1 &  61 & 3.06 & FALSE & TRUE & Parametric \\ 
+  A4: seats outside, Prague 2 &  22 & 1.75 & FALSE & FALSE & Non-parametric \\ 
+  A4: seats outside, Prague 3 &  12 & 1.69 & FALSE & FALSE & Non-parametric \\ 
+  A4: seats outside, Prague 5 &  20 & 2.23 & FALSE & FALSE & Non-parametric \\ 
+  A4: seats outside, Prague 7 &  31 & 0.75 & TRUE & TRUE & Parametric \\ 
+  A4: seats outside, Prague 8 &  35 & 1.12 & FALSE & TRUE & Parametric \\ 
+  A6-A10: Price Level (CZK) & 193 & 0.80 & TRUE & TRUE & Parametric \\ 
+  A8: distance from Orloj (km) & 195 & 1.12 & FALSE & TRUE & Parametric \\ 
    \bottomrule
 \end{tabular}
