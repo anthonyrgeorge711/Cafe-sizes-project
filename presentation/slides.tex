@@ -4,79 +4,123 @@
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}[frame number]
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{graphicx}
-\graphicspath{{../report/figures/}}   % reuse the figures exported by R
+\graphicspath{{../report/figures/}}   % the figures exported by 03_analysis.R
 
 \title{How Big Are Prague's Cafés?}
 \subtitle{Café Size --- Data Analytics Semestral Project}
-\author{Anthony George \and \textit{teammates}}
+\author{Anthony George}
 \date{November 2026}
 
-% One slide per finding: key plot + estimate with CI + effect size + plain-words meaning + test name.
-% Present findings, not procedure. No assumption details here (they are in the report).
-\newcommand{\finding}[4]{%
+% One slide per finding: key plot | result with CI and effect size, plain-words
+% meaning, and the name of the test. Findings only, no procedure.
+% #1 title, #2 figure file, #3 result bullets, #4 plain-words meaning, #5 test
+\newcommand{\finding}[5]{%
 \begin{frame}{#1}
-\begin{columns}[T]
-\column{.58\textwidth}\centering\includegraphics[width=\linewidth]{#2}
-\column{.4\textwidth}\small #3\par\vspace{1em}\footnotesize\textit{Test: #4}
+\begin{columns}[c]
+\column{.54\textwidth}\centering\includegraphics[width=\linewidth]{#2}
+\column{.44\textwidth}
+\begin{itemize}\setlength{\itemsep}{4pt}
+#3
+\end{itemize}
+\vspace{6pt}
+\textbf{#4}\par\vspace{8pt}
+{\footnotesize\textit{Test: #5}}
 \end{columns}
 \end{frame}}
 
 \begin{document}
+
 \frame{\titlepage}
 
+% ---------------------------------------------------------------------------
 \begin{frame}{Introduction}
-\begin{itemize}
-  \item 195 Prague cafés visited in person by the class (autumn 2026)
-  \item Our chapter: \textbf{how big are cafés}, where is outdoor seating, and does size go with ratings and prices?
-  \item \textit{TODO: one line on how the team divides the ten findings}
+\begin{itemize}\setlength{\itemsep}{8pt}
+  \item \textbf{Data:} 195 Prague cafés visited in person by the class in autumn 2026
+  \item \textbf{Question:} how big are Prague's cafés, and does size go together with ratings and prices?
+  \item \textbf{Part 1, describing size (A1--A5):} seats inside and outside, terraces, districts, ratings
+  \item \textbf{Part 2, size and price (A6--A10):} the \emph{Price Level} = average price of espresso, cappuccino and flat white
 \end{itemize}
 \end{frame}
 
-\finding{A1: A typical café seats about 28 inside}{A1_figure.pdf}
-{Mean 28.0 seats, 95\% CI [24.3, 32.4], n = 193 --- no evidence it differs from 30. Median 22: most cafés are smaller, a few very large ones pull the mean up.}
-{one-sample t-test, p = .331}
+% ---------------------------------------------------------------------------
+\finding{A1: Does the average café have 30 seats inside?}{A1_figure.pdf}{
+  \item Mean \textbf{28.0 seats}, 95\% CI [23.9, 32.1], n = 193
+  \item Median only \textbf{22} seats
+  \item d = $-0.07$, p = .331}
+{No evidence the average differs from 30. A few huge cafés pull the mean up; the typical café is smaller.}
+{one-sample t-test}
 
-\finding{A2: Cafés with outdoor seating are a bit bigger inside}{A2_figure.pdf}
-{+7.5 seats, 95\% CI [$-$0.4, 15.4], d = 0.26. \textit{TODO: plain-words meaning.}}
-{Welch t-test, one-tailed p = .031}
+\finding{A2: Do cafés with a terrace have more seats inside?}{A2_figure.pdf}{
+  \item \textbf{30.6 vs 23.1} seats
+  \item Difference \textbf{7.5 seats}, 95\% CI [$-0.4$, 15.4]
+  \item d = 0.26, p = .031 (one-tailed)}
+{Some evidence: cafés with a terrace are a little bigger inside, about two tables. Small effect.}
+{Welch's t-test}
 
-\finding{A3: About 17 more seats inside than outside}{A3_figure.pdf}
-{+17.3 seats, 95\% CI [13.5, 21.2], dz = 0.64. \textit{TODO}}
-{paired t-test, p < .001}
+\finding{A3: How many more seats inside than outside?}{A3_figure.pdf}{
+  \item \textbf{17.3 more seats} inside, 95\% CI [13.5, 21.2], n = 191
+  \item d$_z$ = 0.64, p $<$ .001}
+{Strong evidence, medium effect: the terrace is an extra, not the main space.}
+{paired t-test}
 
-\finding{A4: Outdoor seating differs between districts}{A4_figure.pdf}
-{\textit{TODO: which districts differ (Dunn--Holm table).}}
-{Kruskal--Wallis H(5) = 13.00, p = .023}
+\finding{A4: Do outdoor seats differ between districts?}{A4_figure.pdf}{
+  \item Means from \textbf{2.8} (Prague 5) to \textbf{14.0} (Prague 1), n = 181
+  \item H(5) = 13.00, p = .023
+  \item Only \textbf{Prague 5 vs Prague 1} differs (Holm p = .008)}
+{Districts differ: cafés in Prague 5 have far fewer outdoor seats than in the centre.}
+{Kruskal--Wallis + Dunn's test (Holm)}
 
-\finding{A5: Small cafés are more often top-rated}{A5_figure.pdf}
-{58.5\% vs 29.7\%: +28.8 pp, 95\% CI [13.5, 44.1], V = 0.27. \textit{TODO}}
-{$\chi^2$ test, one-tailed p < .001}
+\finding{A5: Are small cafés more often top-rated?}{A5_figure.pdf}{
+  \item Top-rated (4.7+): \textbf{58.5\%} of small vs \textbf{29.7\%} of other cafés
+  \item \textbf{+28.8 percentage points}, 95\% CI [13.5, 44.1]
+  \item V = 0.27, p $<$ .001 (one-tailed)}
+{Small cafés (15 seats or fewer) are top-rated about twice as often --- an association, not a cause.}
+{chi-square test}
 
-\finding{A6: Bigger cafés are slightly pricier}{A6_figure.pdf}
-{Spearman $\rho$ = 0.25, 95\% CI [0.09, 0.39], n = 191. \textit{TODO}}
-{Spearman correlation, p < .001}
+% ---------------------------------------------------------------------------
+\finding{A6: Are bigger cafés more expensive?}{A6_figure.pdf}{
+  \item Spearman's \textbf{rho = 0.25}, 95\% CI [0.09, 0.39], n = 191
+  \item Shared variance about 6\%, p $<$ .001}
+{A real but weak link: bigger cafés are slightly pricier.}
+{Spearman's correlation}
 
-\finding{A7: +0.7 CZK Price Level per 10 seats}{A7_figure.pdf}
-{0.69 CZK per 10 seats, 95\% CI [0.07, 1.31], R$^2$ = 0.02. \textit{TODO}}
-{simple regression, p = .030}
+\finding{A7: How many CZK per 10 seats?}{A7_figure.pdf}{
+  \item \textbf{+0.69 CZK} per 10 seats, 95\% CI [0.07, 1.31]
+  \item R$^2$ = 0.02, p = .030}
+{Tiny in practice: 50 more seats is about 3.5 CZK more. Driven partly by a few very large cafés.}
+{linear regression}
 
-\finding{A8: Controlling for distance from the Orloj}{A8_figure.pdf}
-{0.61 CZK per 10 seats, 95\% CI [$-$0.01, 1.23]; most of the slope remains but it is no longer clearly different from zero. \textit{TODO}}
-{multiple regression, p = .055}
+\finding{A8: Does it hold once we account for location?}{A8_figure.pdf}{
+  \item Seats slope \textbf{0.61 CZK} (was 0.69; 88\% remains)
+  \item 95\% CI [$-0.01$, 1.23], p = .055
+  \item Each km from the Orloj: \textbf{$-1.55$ CZK} (p = .025)}
+{With location in the model, the size effect is no longer clear. Central cafés are pricier.}
+{multiple regression}
 
-\finding{A9: The size--price link depends on outdoor seating}{A9_figure.pdf}
-{Slope difference $-$2.62 CZK per 10 seats, 95\% CI [$-$4.15, $-$1.10]. \textit{TODO}}
-{regression with interaction, p < .001}
+\finding{A9: Different with and without a terrace?}{A9_figure.pdf}{
+  \item No terrace: \textbf{+2.75 CZK} per 10 seats, 95\% CI [1.39, 4.10]
+  \item With terrace: slope \textbf{2.62 lower} (CI [$-4.15$, $-1.10$], p $<$ .001), so almost flat}
+{Size goes with price only in cafés without a terrace --- partly driven by Café Slavia.}
+{regression with interaction}
 
-\finding{A10: Chance of above-median prices per 10 seats}{A10_figure.pdf}
-{+2.7 pp per 10 seats, 95\% CI [$-$0.3, 5.7] --- no clear evidence. \textit{TODO}}
-{logistic regression, average marginal effect, p = .077}
+\finding{A10: Chance of an above-median price?}{A10_figure.pdf}{
+  \item \textbf{+2.7 percentage points} per 10 seats
+  \item 95\% CI [$-0.3$, 5.7], p = .077}
+{No evidence that size changes the chance of being among the pricier half.}
+{logistic regression (average marginal effect)}
 
+% ---------------------------------------------------------------------------
 \begin{frame}{Conclusion}
-\begin{itemize}
-  \item \textit{TODO: 3 bullets answering ``how big are Prague cafés, and does size matter?''}
-  \item Limits: convenience sample, observational data, cafés in a district not independent
+\begin{itemize}\setlength{\itemsep}{8pt}
+  \item The typical Prague café is \textbf{small}: median 22 seats inside, about 17 more inside than outside
+  \item Size goes clearly with \textbf{ratings}: small cafés are top-rated twice as often
+  \item Size goes only weakly with \textbf{prices}: under 1 CZK per 10 seats, and not clear once location is included
+  \item Limits: a convenience sample, observational data, cafés in a district are not independent
 \end{itemize}
+\vspace{10pt}
+\centering\large\textbf{Size says more about how a café is rated than about what it charges.}
 \end{frame}
+
 \end{document}
