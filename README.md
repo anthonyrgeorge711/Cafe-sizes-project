@@ -1,14 +1,26 @@
-# Prague Cafés — Café Size (Appendix C)
+# How Big Are Prague's Cafés? (Café Size topic)
 
-Run in RStudio after opening `Cafe project.Rproj`, in this order:
+Data Analytics semestral project, Anthony George. Presentation together with Sawyer Gatdula.
 
-1. `analysis/01_cleaning.R` — raw_data.csv → dataset.csv
-2. `analysis/02_descriptive.R` — decision table D_table.tex + D_*.pdf
-3. `analysis/03_analysis.R` — A1–A10 tables and figures + summary table
+## Structure
 
-Then compile `report/report.tex` and `presentation/slides.tex` (pdfLaTeX).
-`01_cleaning.R` uses base R only. `02_descriptive.R` needs dplyr, ggplot2 and xtable
-(`install.packages(c("dplyr", "ggplot2", "xtable"))`); `03_analysis.R` installs any
-missing packages itself on its first run.
+```
+analysis/       raw_data.csv (class data, not edited by hand)
+                01_cleaning.R, 02_descriptive.R, 03_analysis.R
+                dataset.csv (written by 01_cleaning.R)
+report/         report.tex, report.pdf, cafestyle.sty
+                tables/ and figures/ (written by 02 and 03)
+presentation/   slides.tex, slides.pdf (Beamer)
+```
 
-Author: Anthony George
+## How to reproduce
+
+1. Open `Cafe project.Rproj` in RStudio (so the working directory is the repository root).
+2. Run the scripts in order:
+   1. `analysis/01_cleaning.R`: raw_data.csv → dataset.csv (base R only)
+   2. `analysis/02_descriptive.R`: decision table, descriptive statistics and plots (`D_*`)
+   3. `analysis/03_analysis.R`: A1–A10 tables and figures, diagnostics and the summary table
+3. Compile `report/report.tex` and `presentation/slides.tex` with pdfLaTeX.
+
+Scripts 02 and 03 install any missing packages themselves
+(xtable, rstatix, lmtest, marginaleffects).

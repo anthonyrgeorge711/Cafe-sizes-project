@@ -1,6 +1,22 @@
+# WHAT: a helper that installs a package if it is missing, then loads it,
+#       so the script also runs on a computer that doesn't have the package yet.
+# HOW:  requireNamespace() checks whether it is installed; if not ('!'),
+#       install.packages() installs it from CRAN; library() then loads it
+#       (character.only = TRUE because the name is stored in a variable).
+load_packages <- function(packages) {
+  for (pkg in packages) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      install.packages(pkg, repos = "https://cloud.r-project.org")
+    }
+    library(pkg, character.only = TRUE)
+  }
+}
 
-library(xtable)
-library(rstatix)
+# WHAT: loads (and if needed installs) every package this script uses:
+#       xtable (LaTeX tables), rstatix (Dunn's test, A4), lmtest (Breusch-Pagan,
+#       A7-A9) and marginaleffects (average marginal effect, A10).
+# HOW:  our load_packages() helper.
+load_packages(c("xtable", "rstatix", "lmtest", "marginaleffects"))
 
 dir.create("report/tables",  recursive = TRUE, showWarnings = FALSE)
 dir.create("report/figures", recursive = TRUE, showWarnings = FALSE)

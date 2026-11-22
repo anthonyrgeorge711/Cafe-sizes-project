@@ -1,8 +1,22 @@
 
+# WHAT: a helper that installs a package if it is missing, then loads it,
+#       so the script also runs on a computer that doesn't have the package yet.
+# HOW:  requireNamespace() checks whether it is installed; if not ('!'),
+#       install.packages() installs it from CRAN; library() then loads it
+#       (character.only = TRUE because the name is stored in a variable).
+load_packages <- function(packages) {
+  for (pkg in packages) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      install.packages(pkg, repos = "https://cloud.r-project.org")
+    }
+    library(pkg, character.only = TRUE)
+  }
+}
+
 # WHAT: loads xtable, the package that turns an R table into a LaTeX table
-#       for the report.
-# HOW:  library(). (It's installed already; the real 03 script installed it.)
-library(xtable)
+#       for the report (installing it first if needed).
+# HOW:  our load_packages() helper.
+load_packages("xtable")
 
 # WHAT: makes the folders where the report looks for tables and figures.
 # HOW:  dir.create(); recursive = TRUE also makes the parent folder 'report';
