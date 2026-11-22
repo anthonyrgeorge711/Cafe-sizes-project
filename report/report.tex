@@ -49,7 +49,7 @@ Table~\ref{tab:S} summarises the main result of every analysis; the full table f
 \subsection{A1: Does the average café seat 30 people inside?}
 \Ho: the mean number of seats inside is 30. \Hone: it is different from 30 (two-tailed).
 Method: one-sample t-test.
-The average café has \meanci{28.0}{23.9}{32.1}{seats} (\ncol\,=\,193). There is no evidence that this differs from 30 (\tstat{192}{-0.97}, \pval{.331}, \textit{d}\,=\,$-0.07$). The median is only 22, because a few very large cafés pull the mean up.
+The average café has \meanci{28.0}{23.9}{32.1}{seats} (\ncol\,=\,193; 2 cafés lost to missing values). There is no evidence that this differs from 30 (\tstat{192}{-0.97}, \pval{.331}, \textit{d}\,=\,$-0.07$). The median is only 22 seats (IQR 17), because a few very large cafés pull the mean up.
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A1_figure.pdf}
@@ -60,7 +60,7 @@ The average café has \meanci{28.0}{23.9}{32.1}{seats} (\ncol\,=\,193). There is
 \subsection{A2: Do cafés with outdoor seating have more seats inside?}
 \Ho: the mean number of seats inside is the same in cafés with and without outdoor seating. \Hone: it is higher in cafés with outdoor seating (one-tailed, fixed in advance). Difference: outdoor minus no outdoor.
 Method: Welch's t-test.
-Cafés with a terrace have 7.5 more seats inside (30.6 vs 23.1; \CI{-0.4}{15.4}; \ncol\,=\,128 and 63). This is evidence of a difference (\tstat{161.59}{1.87}, \pval{.031}, one-tailed), but the effect is small (\textit{d}\,=\,0.26).
+Cafés with a terrace have 7.5 more seats inside (30.6 vs 23.1; \CI{-0.4}{15.4}; \ncol\,=\,128 and 63; 4 cafés lost). Levene's test finds no difference in variances (\pval{.636}), and Welch's test does not need equal variances anyway. This is evidence of a difference (\tstat{161.59}{1.87}, \pval{.031}, one-tailed), but the effect is small (\textit{d}\,=\,0.26).
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A2_figure.pdf}
@@ -71,7 +71,7 @@ Cafés with a terrace have 7.5 more seats inside (30.6 vs 23.1; \CI{-0.4}{15.4};
 \subsection{A3: How many more seats does a café have inside than outside?}
 \Ho: the mean difference (inside minus outside) is 0. \Hone: it is greater than 0 (one-tailed).
 Method: paired t-test.
-A café has on average 17.3 more seats inside than outside (\CI{13.5}{21.2}, \ncol\,=\,191). The evidence is strong (\tstat{190}{8.85}, \plt{.001}, one-tailed) and the effect medium (\textit{d}$_z$\,=\,0.64): terraces are an extra, not the main space.
+A café has on average 17.3 more seats inside than outside (\CI{13.5}{21.2}, \ncol\,=\,191; 4 cafés lost). The evidence is strong (\tstat{190}{8.85}, \plt{.001}, one-tailed) and the effect medium (\textit{d}$_z$\,=\,0.64): terraces are an extra, not the main space.
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A3_figure.pdf}
@@ -82,7 +82,7 @@ A café has on average 17.3 more seats inside than outside (\CI{13.5}{21.2}, \nc
 \subsection{A4: Does the number of outdoor seats differ between districts?}
 \Ho: outdoor seats are distributed the same way in Prague 1, 2, 3, 5, 7 and 8. \Hone: at least one district differs.
 Method: Kruskal--Wallis test with Dunn's comparisons (Holm), because Prague~2, 3 and 5 have fewer than 30 cafés.
-Mean outdoor seats range from 2.8 in Prague~5 to 14.0 in Prague~1 (\ncol\,=\,181). The districts differ (\textit{H}(5)\,=\,13.00, \pval{.023}), but after Holm adjustment only Prague~5 vs Prague~1 does (\pval{.008}; Table~\ref{tab:A4post}).
+Mean outdoor seats range from 2.8 in Prague~5 to 14.0 in Prague~1 (\ncol\,=\,181; 14 cafés are in other districts or have missing values). The districts differ (\textit{H}(5)\,=\,13.00, \pval{.023}), but after Holm adjustment only Prague~5 vs Prague~1 does: Prague~5 has 11.3 fewer outdoor seats on average (bootstrap \CI{-17.0}{-6.5}, Holm \pval{.008}; Table~\ref{tab:A4post}).
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A4_figure.pdf}
@@ -93,7 +93,7 @@ Mean outdoor seats range from 2.8 in Prague~5 to 14.0 in Prague~1 (\ncol\,=\,181
 \subsection{A5: Are small cafés more likely to be top-rated?}
 \Ho: the share of top-rated cafés (rating $\ge$ 4.7) is the same for small cafés ($\le$ 15 seats inside) and other cafés. \Hone: it is higher for small cafés (one-tailed). Difference: small minus other, in percentage points.
 Method: $\chi^2$ test (smallest expected count 20).
-58.5\% of small cafés are top-rated vs 29.7\% of others, a difference of 28.8 percentage points (\CI{13.5}{44.1}). The evidence is strong (\chisqstat{1}{191}{13.51}, \plt{.001}, one-tailed; \textit{V}\,=\,0.27). This is an association, not a cause.
+31 of 53 small cafés (58.5\%) are top-rated vs 41 of 138 others (29.7\%; 4 cafés lost), a difference of 28.8 percentage points (\CI{13.5}{44.1}). The evidence is strong (\chisqstat{1}{191}{13.51}, \plt{.001}, one-tailed; \textit{V}\,=\,0.27). This is an association, not a cause.
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A5_figure.pdf}
@@ -104,7 +104,7 @@ Method: $\chi^2$ test (smallest expected count 20).
 \subsection{A6: Is the Price Level correlated with seats inside?}
 \Ho: $\rho = 0$. \Hone: $\rho \neq 0$.
 Method: Spearman's $\rho$ with a bootstrap CI, because seats inside is very skewed.
-The correlation is positive but weak ($\rho$\,=\,0.25, \CI{0.09}{0.39}, \ncol\,=\,191, \plt{.001}): size accounts for about 6\% of the variation in prices.
+The correlation is positive but weak ($\rho$\,=\,0.25, \CI{0.09}{0.39}, \ncol\,=\,191, 4 lost, \plt{.001}): size accounts for about 6\% of the variation in prices.
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A6_figure.pdf}
@@ -115,7 +115,7 @@ The correlation is positive but weak ($\rho$\,=\,0.25, \CI{0.09}{0.39}, \ncol\,=
 \subsection{A7: How much does the Price Level change per 10 seats?}
 \Ho: slope $= 0$. \Hone: slope $\neq 0$.
 Method: simple linear regression.
-Each 10 extra seats go with a Price Level 0.69\,CZK higher (\CI{0.07}{1.31}, \pval{.030}, \ncol\,=\,191, \textit{R}$^2$\,=\,0.02), which is tiny in practice. The slope depends on a few very large cafés, above all VNITROBLOCK (Cook's distance 0.54).
+Each 10 extra seats go with a Price Level 0.69\,CZK higher (\CI{0.07}{1.31}, \pval{.030}, \ncol\,=\,191, 4 lost, \textit{R}$^2$\,=\,0.02), which is tiny in practice. The slope depends on a few very large cafés, above all VNITROBLOCK (Cook's distance 0.54).
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A7_figure.pdf}
@@ -126,7 +126,7 @@ Each 10 extra seats go with a Price Level 0.69\,CZK higher (\CI{0.07}{1.31}, \pv
 \subsection{A8: Does the link hold once distance from the Orloj is controlled?}
 \Ho: the slope of seats inside, holding distance constant, is 0. \Hone: it is not 0.
 Method: multiple regression with distance from the Orloj.
-With distance in the model, 88\% of the seats slope remains (0.61\,CZK, \CI{-0.01}{1.23}, \pval{.055}), but it is no longer clearly different from zero. Each km from the Orloj goes with a Price Level 1.55\,CZK lower (\CI{-2.91}{-0.19}, \pval{.025}).
+With distance in the model, 88\% of the seats slope remains (0.61\,CZK, \CI{-0.01}{1.23}, \pval{.055}; \ncol\,=\,191, 4 lost), but it is no longer clearly different from zero. Each km from the Orloj goes with a Price Level 1.55\,CZK lower (\CI{-2.91}{-0.19}, \pval{.025}).
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A8_figure.pdf}
@@ -137,7 +137,7 @@ With distance in the model, 88\% of the seats slope remains (0.61\,CZK, \CI{-0.0
 \subsection{A9: Does the link differ with and without outdoor seating?}
 \Ho: the interaction coefficient is 0 (same slope). \Hone: it is not 0.
 Method: regression with an interaction.
-Without a terrace, 10 extra seats go with 2.75\,CZK more (\CI{1.39}{4.10}); with a terrace the slope is 2.62\,CZK lower (\CI{-4.15}{-1.10}, \plt{.001}), so it is essentially flat (\ncol\,=\,189). The result leans on Café Slavia (Cook's distance 0.33).
+Without a terrace, 10 extra seats go with 2.75\,CZK more (\CI{1.39}{4.10}); with a terrace the slope is 2.62\,CZK lower (\CI{-4.15}{-1.10}, \plt{.001}), so it is essentially flat (\ncol\,=\,189, 6 lost). The result leans on Café Slavia (Cook's distance 0.33).
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A9_figure.pdf}
@@ -148,7 +148,7 @@ Without a terrace, 10 extra seats go with 2.75\,CZK more (\CI{1.39}{4.10}); with
 \subsection{A10: Does the chance of an above-median Price Level change with size?}
 \Ho: the average marginal effect of 10 seats is 0. \Hone: it is not 0.
 Method: logistic regression with the average marginal effect.
-Each 10 extra seats raise the chance of an above-median Price Level by 2.7 percentage points (\CI{-0.3}{5.7}, \pval{.077}, \ncol\,=\,191): there is no evidence of an effect.
+Each 10 extra seats raise the chance of an above-median Price Level by 2.7 percentage points (\CI{-0.3}{5.7}, \pval{.077}, \ncol\,=\,191, 4 lost): there is no evidence of an effect.
 
 \begin{figure}[H]\centering
 \includegraphics[width=.45\textwidth]{figures/A10_figure.pdf}
@@ -165,7 +165,7 @@ The typical Prague café in this sample is small. Small cafés are much more oft
 % =====================================================================
 \appendix
 \section{Descriptive statistics}\label{app:desc}
-\begin{table}[H]\centering\caption{Descriptive statistics of every variable and group used: n, mean, standard deviation, median, interquartile range, minimum and maximum.}\rtable{D_stats.tex}\end{table}
+\begin{table}[H]\centering\caption{Descriptive statistics of every variable and group used: n, missing values, mean, standard deviation, median, interquartile range, minimum and maximum.}\rtable{D_stats.tex}\end{table}
 \begin{table}[H]\centering\caption{Yes/no variables: counts and the percentage of yes.}\rtable{D_categorical.tex}\end{table}
 
 \section{Normality and central-limit checks}
@@ -197,10 +197,10 @@ Each row: histogram, boxplot, normal Q--Q plot and the distribution of 5{,}000 b
 
 \section{Results tables}\label{app:tables}
 \begin{table}[H]\centering\caption{A1: one-sample t-test of the mean number of seats inside against 30.}\rtable{A1_table.tex}\end{table}
-\begin{table}[H]\centering\caption{A2: seats inside by outdoor seating, Welch's t-test (p one-tailed).}\rtable{A2_table.tex}\end{table}
+\begin{table}[H]\centering\caption{A2: seats inside by outdoor seating, Welch's t-test (p one-tailed) and Levene's test of equal variances.}\rtable{A2_table.tex}\end{table}
 \begin{table}[H]\centering\caption{A3: paired t-test of seats inside against seats outside (p one-tailed).}\rtable{A3_table.tex}\end{table}
 \begin{table}[H]\centering\caption{A4: outdoor seats by district, with the Kruskal--Wallis test.}\rtable{A4_table.tex}\end{table}
-\begin{table}[H]\centering\caption{A5: percentage of top-rated cafés by size, the difference in percentage points, the $\chi^2$ test (p one-tailed), Cramér's V and the smallest expected count.}\rtable{A5_table.tex}\end{table}
+\begin{table}[H]\centering\caption{A5: counts and percentage of top-rated cafés by size, the difference in percentage points, the $\chi^2$ test (p one-tailed), Cramér's V and the smallest expected count.}\rtable{A5_table.tex}\end{table}
 \begin{table}[H]\centering\caption{A6: Spearman correlation of Price Level and seats inside, with a bootstrap 95\% CI.}\rtable{A6_table.tex}\end{table}
 \begin{table}[H]\centering\caption{A7: simple regression of Price Level on seats inside (per 10 seats).}\rtable{A7_table.tex}\end{table}
 \begin{table}[H]\centering\caption{A8: multiple regression of Price Level on seats inside and distance from the Orloj, with the seats slope before distance was added.}\rtable{A8_table.tex}\end{table}
@@ -208,7 +208,7 @@ Each row: histogram, boxplot, normal Q--Q plot and the distribution of 5{,}000 b
 \begin{table}[H]\centering\caption{A10: logistic regression of above-median Price Level on seats inside: average marginal effect in percentage points and odds ratio.}\rtable{A10_table.tex}\end{table}
 
 \section{Assumption checks and post hoc tests}\label{app:diag}
-\begin{table}[H]\centering\caption{A4: Dunn's pairwise comparisons: z statistics, raw and Holm-adjusted p-values.}\label{tab:A4post}\rtable{A4_posthoc_table.tex}\end{table}
+\begin{table}[H]\centering\caption{A4: Dunn's pairwise comparisons: mean difference in outdoor seats with a bootstrap 95\% CI (5{,}000 resamples, seed 2026), z statistic, raw and Holm-adjusted p-values.}\label{tab:A4post}\rtable{A4_posthoc_table.tex}\end{table}
 \begin{figure}[H]\centering\includegraphics[width=.68\textwidth]{figures/A7_diagnostics.pdf}\caption{A7 diagnostics: residuals vs fitted, normal Q--Q of residuals, Cook's distance.}\end{figure}
 \begin{figure}[H]\centering\includegraphics[width=.68\textwidth]{figures/A8_diagnostics.pdf}\caption{A8 diagnostics: residuals vs fitted, normal Q--Q of residuals, Cook's distance.}\end{figure}
 \begin{figure}[H]\centering\includegraphics[width=.68\textwidth]{figures/A9_diagnostics.pdf}\caption{A9 diagnostics: residuals vs fitted, normal Q--Q of residuals, Cook's distance.}\end{figure}

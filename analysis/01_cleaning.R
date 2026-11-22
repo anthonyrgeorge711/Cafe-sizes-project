@@ -19,6 +19,10 @@ clean <- raw[!empty_rows,]
 
 dim(clean)
 
+# WHAT: checks for exact duplicate rows (the same row pasted twice). Result: 0.
+# HOW:  duplicated() is TRUE for each row identical to an earlier one; sum() counts them.
+sum(duplicated(clean))
+
 #clean cafes entered twice
 
 clean[] <- lapply(clean, trimws)
@@ -49,6 +53,11 @@ nrow(clean)
 table(clean$District..number., useNA = "ifany")
 
 table(clean$Cafe.Type, useNA ="ifany")
+
+# WHAT: lists the payment categories too, to check their spelling.
+#       (All entries use one of the dropdown values, so nothing needs fixing.)
+# HOW:  table() with useNA = "ifany".
+table(clean$Payment, useNA = "ifany")
 
 ## ---- Step 5: Fix spelling of categories ----
 
@@ -117,12 +126,28 @@ summary(clean[, c("espresso", "cappuccino", "flat_white", "filter")])
 
 #clean seatd
 
+# WHAT: BEFORE converting, lists every seat / rating / number-of-ratings value
+#       that is not a plain number, to see what the problem is.
+#       Only the number of ratings has problems: thousands commas like "1,020".
+# HOW:  grepl("^[0-9.]+$", x) is TRUE for plain numbers; '!' turns it around;
+#       !is.na() skips missing cells; unique() shows each odd value once.
+plain <- function(x) grepl("^[0-9.]+$", x) | is.na(x)
+unique(clean$Seating.Places.Inside[!plain(clean$Seating.Places.Inside)])
+unique(clean$Seating.Places.Outside[!plain(clean$Seating.Places.Outside)])
+unique(clean$Rating..Google.[!plain(clean$Rating..Google.)])
+unique(clean$Number.of.ratings..Google.[!plain(clean$Number.of.ratings..Google.)])
+
 clean$seats_inside  <- as.integer(clean$Seating.Places.Inside)
 clean$seats_outside <- as.integer(clean$Seating.Places.Outside)
 
 clean$rating <- as.numeric(clean$Rating..Google.)
 
 clean$n_ratings <- as.numeric(gsub(",", "", clean$Number.of.ratings..Google.))
+
+# WHAT: AFTER converting, shows the rows that had a comma, text next to number,
+#       to check by eye that "1,020" really became 1020.
+# HOW:  grepl(",", x) picks the rows whose text contains a comma.
+clean[grepl(",", clean$Number.of.ratings..Google.), c("Number.of.ratings..Google.", "n_ratings")]
 
 # WHAT: finds the distance column by searching for "Orloj" in the column names,
 #       so we never have to type the letter ž (which breaks on some computers).

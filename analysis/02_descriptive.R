@@ -68,6 +68,9 @@ mean((boot_means - mean(boot_means))^3) / sd(boot_means)^3
 #       descriptive statistics. 'file' is the short name for the PDF.
 # HOW:  function(x, file) takes two inputs: the values, and a file name.
 check <- function(x, file) {
+  # WHAT: counts the missing values first (the brief asks to report them).
+  # HOW:  is.na() marks missing values; sum() counts them.
+  n_missing <- sum(is.na(x))
   # WHAT: drop missing values.  HOW: na.omit().
   x <- na.omit(x)
   # WHAT: skewness of the data itself.  HOW: the same formula as before.
@@ -104,7 +107,7 @@ check <- function(x, file) {
   
   # WHAT: returns one row: the statistics (rounded) plus the verdict.
   # HOW:  data.frame(); IQR() = interquartile range; round(x, 1) = 1 decimal.
-  data.frame(n = length(x), mean = round(mean(x), 1), sd = round(sd(x), 1),
+  data.frame(n = length(x), missing = n_missing, mean = round(mean(x), 1), sd = round(sd(x), 1),
              median = median(x), iqr = IQR(x), min = min(x), max = max(x),
              skew = round(skew, 2), normal, clt, verdict)
 }
@@ -154,7 +157,7 @@ print(xtable(D[, c("group", "n", "skew", "normal", "clt", "verdict")]),
 
 # WHAT: saves the STATISTICS columns as report/tables/D_stats.tex (appendix).
 # HOW:  same as above, other columns.
-print(xtable(D[, c("group", "n", "mean", "sd", "median", "iqr", "min", "max")]),
+print(xtable(D[, c("group", "n", "missing", "mean", "sd", "median", "iqr", "min", "max")]),
       file = "report/tables/D_stats.tex",
       include.rownames = FALSE, booktabs = TRUE, floating = FALSE)
 

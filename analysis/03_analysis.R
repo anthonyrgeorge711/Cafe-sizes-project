@@ -13,10 +13,10 @@ load_packages <- function(packages) {
 }
 
 # WHAT: loads (and if needed installs) every package this script uses:
-#       xtable (LaTeX tables), rstatix (Dunn's test, A4), lmtest (Breusch-Pagan,
-#       A7-A9) and marginaleffects (average marginal effect, A10).
+#       xtable (LaTeX tables), car (Levene's test, A2), rstatix (Dunn's test, A4),
+#       lmtest (Breusch-Pagan, A7-A9) and marginaleffects (average marginal effect, A10).
 # HOW:  our load_packages() helper.
-load_packages(c("xtable", "rstatix", "lmtest", "marginaleffects"))
+load_packages(c("xtable", "car", "rstatix", "lmtest", "marginaleffects"))
 
 dir.create("report/tables",  recursive = TRUE, showWarnings = FALSE)
 dir.create("report/figures", recursive = TRUE, showWarnings = FALSE)
@@ -58,9 +58,13 @@ a1
 median(x)
 
 
-A1 <- data.frame(n = length(x), mean = round(mean(x), 1),
+# WHAT: the A1 table. 'lost' = cafes dropped because seats inside is missing;
+#       the median and IQR are given next to the mean because the data are skewed.
+# HOW:  sum(is.na()) counts the missing; IQR() = interquartile range.
+A1 <- data.frame(n = length(x), lost = sum(is.na(df$seats_inside)),
+                 mean = round(mean(x), 1),
                  ci_low = round(a1$conf.int[1], 1), ci_high = round(a1$conf.int[2], 1),
-                 median = median(x), t = round(a1$statistic, 2), df = a1$parameter,
+                 median = median(x), iqr = IQR(x), t = round(a1$statistic, 2), df = a1$parameter,
                  p = fp(a1$p.value), d = round((mean(x) - 30) / sd(x), 2))
 A1
 save_tab(A1, "A1")
@@ -117,12 +121,23 @@ d2  <- (mean(x_with) - mean(x_without)) / sp
 # WHAT: the A2 table: both groups' n and means, the difference, its CI,
 #       Welch's t and df, the one-tailed p, and d.
 # HOW:  data.frame() with one row; round() for decimals; fp() formats p.
+# WHAT: assumption check: do the two groups have equal variances? (Levene's test;
+#       p > .05 -> no evidence of different variances. Welch's test is used anyway,
+#       because it does not need equal variances.)
+# HOW:  leveneTest(values ~ group) from the car package; the values of both groups
+#       are joined with c(), and rep() makes the matching group labels.
+lev2 <- leveneTest(c(x_with, x_without) ~
+                     factor(rep(c("with", "without"), c(length(x_with), length(x_without)))))
+lev2
+
 A2 <- data.frame(n_with = length(x_with), n_without = length(x_without),
+                 lost = nrow(df) - length(x_with) - length(x_without),
                  mean_with = round(mean(x_with), 1), mean_without = round(mean(x_without), 1),
                  difference = round(mean(x_with) - mean(x_without), 1),
                  ci_low = round(ci2[1], 1), ci_high = round(ci2[2], 1),
                  t = round(a2$statistic, 2), df = round(a2$parameter, 2),
-                 p_one_tailed = fp(a2$p.value), d = round(d2, 2))
+                 p_one_tailed = fp(a2$p.value), d = round(d2, 2),
+                 levene_p = fp(lev2$`Pr(>F)`[1]))
 A2
 save_tab(A2, "A2")
 
@@ -175,7 +190,7 @@ ci3 <- t.test(inside, outside, paired = TRUE)$conf.int
 # WHAT: the A3 table: n, mean inside, mean outside, mean difference, CI, t, df,
 #       one-tailed p, and dz.
 # HOW:  data.frame() with one row.
-A3 <- data.frame(n = length(d3), mean_inside = round(mean(inside), 1),
+A3 <- data.frame(n = length(d3), lost = nrow(df) - length(d3), mean_inside = round(mean(inside), 1),
                  mean_outside = round(mean(outside), 1),
                  difference = round(mean(d3), 1),
                  ci_low = round(ci3[1], 1), ci_high = round(ci3[2], 1),
@@ -222,7 +237,21 @@ dunn_test(d4, seats_outside ~ district_A4, p.adjust.method = "holm")
 #       each pair, z, raw p and Holm-adjusted p.
 # HOW:  '<-' stores the result; data.frame() picks the columns; fp() formats p.
 post4 <- dunn_test(d4, seats_outside ~ district_A4, p.adjust.method = "holm")
-A4_post <- data.frame(pair = paste(post4$group2, "vs", post4$group1),
+# WHAT: for each pair, the difference in mean outdoor seats (group2 minus group1)
+#       with a bootstrap 95% CI, because Dunn's test itself gives no CI.
+# HOW:  for each pair i: take both districts' values (a and b); 5,000 times
+#       resample both and take the difference in means; keep the real difference
+#       and the 2.5% and 97.5% points. t() turns the result so each pair is a row.
+pair_ci <- t(sapply(seq_len(nrow(post4)), function(i) {
+  a <- d4$seats_outside[d4$district_A4 == post4$group2[i]]
+  b <- d4$seats_outside[d4$district_A4 == post4$group1[i]]
+  set.seed(2026)
+  bd <- replicate(5000, mean(sample(a, replace = TRUE)) - mean(sample(b, replace = TRUE)))
+  c(mean(a) - mean(b), quantile(bd, c(0.025, 0.975)))
+}))
+A4_post <- data.frame(pair = paste(post4$group2, "minus", post4$group1),
+                      mean_diff = round(pair_ci[, 1], 1),
+                      ci_low = round(pair_ci[, 2], 1), ci_high = round(pair_ci[, 3], 1),
                       z = round(post4$statistic, 2),
                       p = fp(post4$p), p_holm = fp(post4$p.adj))
 save_tab(A4_post, "A4_posthoc")
@@ -237,8 +266,13 @@ A4 <- data.frame(district = districts,
                  mean = round(as.vector(tapply(d4$seats_outside, d4$district_A4, mean)), 1),
                  ci_low = round(ci4[1, ], 1), ci_high = round(ci4[2, ], 1),
                  median = as.vector(tapply(d4$seats_outside, d4$district_A4, median)))
+# WHAT: the test result in the first row, and in the second row how many cafes
+#       were left out (other districts or missing outdoor seats).
+# HOW:  paste0() builds the text; rep("", ...) leaves the other rows empty.
 A4$test <- c(paste0("Kruskal-Wallis H(", a4$parameter, ") = ", round(a4$statistic, 2),
-                    ", p = ", fp(a4$p.value)), rep("", length(districts) - 1))
+                    ", p = ", fp(a4$p.value)),
+             paste0("lost: ", nrow(df) - nrow(d4), " (other districts or missing)"),
+             rep("", length(districts) - 2))
 A4
 save_tab(A4, "A4")
 
@@ -293,7 +327,10 @@ p5_two <- prop.test(top, sizes, correct = FALSE)
 # WHAT: the A5 table: % top-rated in each group, the difference in percentage
 #       points with its CI, chi-square, one-tailed p, Cramer's V.
 # HOW:  100 x proportions; $conf.int from the two-tailed test.
-A5 <- data.frame(pct_small = round(100 * top[1] / sizes[1], 1),
+A5 <- data.frame(top_small = top[1], n_small = sizes[1],
+                 top_other = top[2], n_other = sizes[2],
+                 lost = nrow(df) - sum(tab5),
+                 pct_small = round(100 * top[1] / sizes[1], 1),
                  pct_other = round(100 * top[2] / sizes[2], 1),
                  difference_pp = round(100 * (top[1] / sizes[1] - top[2] / sizes[2]), 1),
                  ci_low = round(100 * p5_two$conf.int[1], 1),
@@ -340,7 +377,7 @@ ci6 <- quantile(boot_rho, c(0.025, 0.975))
                 
 ci6
 
-A6 <- data.frame(n = nrow(d6), rho = round(a6$estimate, 2),
+A6 <- data.frame(n = nrow(d6), lost = nrow(df) - nrow(d6), rho = round(a6$estimate, 2),
                  ci_low = round(ci6[1], 2), ci_high = round(ci6[2], 2),
                  shared_variance = round(100 * a6$estimate^2, 1),
                  p = fp(a6$p.value))
@@ -388,6 +425,7 @@ inf17[order(-inf17$cooks_d), ]
 
 A7 <- reg_tab(m7)
 A7$n  <- nobs(m7)
+A7$lost <- nrow(df) - nobs(m7)
 A7$R2 <- round(summary(m7)$r.squared, 2)
 A7
 save_tab(A7, "A7")
@@ -433,6 +471,7 @@ infl8[order(-infl8$cooks_d), ]
 
 A8 <- reg_tab(m8)
 A8$n <- nobs(m8)
+A8$lost <- nrow(df) - nobs(m8)
 A8$R2 <- round(summary(m8)$r.squared, 2)
 A8$seats_sloped_before <- round(b_before, 2)
 
@@ -477,6 +516,10 @@ infl9[order(-infl9$cooks_d), ]
 
 A9 <- reg_tab(m9)
 A9$n <- nobs(m9)
+A9$lost <- nrow(df) - nobs(m9)
+# WHAT: how many cafes are in each group (with / without a terrace).
+# HOW:  table() counts them.
+table(d9$outdoor)
 A9$R2 <- round(summary(m9)$r.squared, 2)
 
 A9
@@ -517,7 +560,7 @@ summary(m10)
 ame10 <- avg_slopes(m10, variables = "seats10")
 ame10
 
-A10 <- data.frame(n= nobs(m10),
+A10 <- data.frame(n= nobs(m10), lost = nrow(df) - nobs(m10),
                   ame_pp = round(100* ame10$estimate, 1),
                   ci_low = round(100 * ame10$conf.low, 1),
                   ci_high = round(100 * ame10$conf.high, 1),
